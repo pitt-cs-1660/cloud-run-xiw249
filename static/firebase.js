@@ -54,6 +54,7 @@ window.onload = function () {
     console.log('Running with auth enabled.');
     initApp();
   }
+ document.getElementById('signInButton').addEventListener('click', toggle);
 };
 
 function signIn() {
@@ -111,22 +112,39 @@ function toggle() {
 async function vote(team) {
   console.log(`Submitting vote for ${team}...`);
   if (firebase.auth().currentUser || authDisabled()) {
-    // Retrieve JWT to identify the user to the Identity Platform service.
-    // Returns the current token if it has not expired. Otherwise, this will
-    // refresh the token and return a new one.
     try {
       const token = await createIdToken();
 
-      /*
-       * ++++ YOUR CODE HERE ++++
-       */
-      window.alert(`Not implemented yet!`);
+
+      const formData = new URLSearchParams();
+      formData.append("team", team);
+
+
+      const response = await fetch("/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData.toString()
+      });
+
+
+      if (!response.ok) {
+        throw new Error(`Server returned an error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Server responded with:", data);
+      window.alert("Vote submitted successfully!");
 
     } catch (err) {
       console.log(`Error when submitting vote: ${err}`);
-      window.alert('Something went wrong... Please try again!');
+      window.alert("Something went wrong... Please try again!");
     }
   } else {
-    window.alert('User not signed in.');
+    window.alert("User not signed in.");
   }
 }
+
+
